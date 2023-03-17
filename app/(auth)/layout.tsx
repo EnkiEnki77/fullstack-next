@@ -7,6 +7,7 @@
 
 import GlassPane from '@/components/GlassPane'
 import React from 'react'
+import  '@/styles/global.css'
 
 type Props = {children: React.ReactNode}
 
