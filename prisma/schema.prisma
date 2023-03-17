@@ -15,41 +15,33 @@ datasource db {
 //Also think about what the queries will  look like, because that will determine what indexes you create.
 
 //After creating your schema you must sync it with the db. Use npx prisma migrate dev
-
 model User {
-  //every model should have an id with the default being universally unique identifier. its a formatted string thats guaranteed to be unique.
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  email     String
-  firstName String
-  lastName  String
+  id        String    @id @default(uuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  email     String  @unique
   password  String
+  firstName String?
+  lastName  String?
   projects  Project[]
-  tasks      Task[]
+  tasks     Task[]
 }
 
 model Project {
-  //Every model with have these three indexes
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name    String
   ownerId String
-  //This is a one to many relation
   owner   User   @relation(fields: [ownerId], references: [id])
 
+  name        String
   description String?
   due         DateTime?
-  //Add soft delete, so if a user deletes their profile but wants it back you still  have their data. 
+  tasks        Task[]
   deleted     Boolean   @default(false)
-  tasks       Task[]
 
-  //Is saying when an item of this model type is created the combo of its ownerId and name in the db have to be unique
   @@unique([ownerId, name])
-  //Creates an index for this combo, so you can write a query for it. 
   @@index([ownerId, id])
 }
 
@@ -64,16 +56,18 @@ model Task {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  status TASK_STATUS @default(NOT_STARTED)
-  name   String
+  ownerId String
+  owner   User   @relation(fields: [ownerId], references: [id])
 
-  ownerId   String
-  owner     User    @relation(fields: [ownerId], references: [id])
   projectId String
   project   Project @relation(fields: [projectId], references: [id])
 
-  due DateTime?
-  deleted Boolean @default(false)
+  status      TASK_STATUS @default(NOT_STARTED)
+  name        String
+  description String
+
+  due     DateTime?
+  deleted Boolean   @default(false)
 
   @@index([ownerId])
 }
